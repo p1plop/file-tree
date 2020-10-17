@@ -1,0 +1,15 @@
+<div class="search">
+  <input type="text" placeholder="Поиск" #search (keyup)="searchChange(search.value)">
+</div>
+
+<div class="main">
+  <div class="section structure">
+    <h2>Фалйовая структура</h2>
+    <app-folder [node]="filteredFiles" (selected)="viewByPath($event)" [open]="openPath"></app-folder>
+  </div>
+
+  <div class="section">
+    <h2>Предпросмотр</h2>
+    <p>{{ viewedItem?.name }}</p>
+  </div>
+</div>
