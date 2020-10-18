@@ -1,14 +1,16 @@
-import {Component, Input, OnInit, Output, EventEmitter} from '@angular/core';
+import {Component, Input, OnInit, Output, EventEmitter, OnDestroy} from '@angular/core';
 import {Folder} from '../../../models/folder';
+import {Subscription} from "rxjs";
 
 @Component({
   selector: 'app-folder',
   templateUrl: './folder.component.html',
   styleUrls: ['./folder.component.scss']
 })
-export class FolderComponent implements OnInit {
+export class FolderComponent implements OnInit, OnDestroy {
   opened: string[] = [];
   openChildPath = new EventEmitter<string>();
+  openSubscription: Subscription;
 
   @Input() node: Folder;
   @Input() open: EventEmitter<string>;
@@ -17,7 +19,7 @@ export class FolderComponent implements OnInit {
   constructor() { }
 
   ngOnInit(): void {
-    this.open.subscribe(path => {
+    this.openSubscription = this.open.subscribe(path => {
       const pathArray = path.split('/');
       this.select(pathArray[0]);
 
@@ -53,6 +55,10 @@ export class FolderComponent implements OnInit {
 
   isOpened(name: string): boolean {
     return this.opened.includes(name);
+  }
+
+  ngOnDestroy() {
+    this.openSubscription.unsubscribe();
   }
 
 }

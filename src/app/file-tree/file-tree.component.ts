@@ -1,9 +1,9 @@
-import {Component, EventEmitter, OnInit, ChangeDetectorRef, AfterViewInit} from '@angular/core';
+import {Component, EventEmitter, OnInit, ChangeDetectorRef, AfterViewInit, OnDestroy} from '@angular/core';
 import { Folder } from '../../models/folder';
 import {File} from '../../models/file';
 import { files } from '../files';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Subject} from 'rxjs';
+import {Subject, Subscription} from 'rxjs';
 import {debounceTime} from 'rxjs/operators';
 
 @Component({
@@ -11,17 +11,18 @@ import {debounceTime} from 'rxjs/operators';
   templateUrl: './file-tree.component.html',
   styleUrls: ['./file-tree.component.scss']
 })
-export class FileTreeComponent implements OnInit, AfterViewInit {
+export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
   files: Folder = files;
   filteredFiles: Folder = Object.assign({}, this.files);
   viewedItem: Folder | File;
   openPath = new EventEmitter<string>();
   searchInput = new Subject();
+  searchSubscription: Subscription
 
   constructor(private router: Router, private route: ActivatedRoute, private cdRef: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.searchInput.pipe(
+    this.searchSubscription = this.searchInput.pipe(
       debounceTime(1000)
     ).subscribe((term: string) => {
       const itemsClone = JSON.parse(JSON.stringify(files.items));
@@ -68,5 +69,9 @@ export class FileTreeComponent implements OnInit, AfterViewInit {
         return item.name.toLowerCase().includes(term);
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.searchSubscription.unsubscribe();
   }
 }
