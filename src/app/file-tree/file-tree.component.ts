@@ -44,7 +44,7 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
     let area = this.files.items;
     for (let i = 0; i < arr.length - 1; i++) {
       const currentItem = area.find(item => item.name === arr[i]);
-      if ('items' in currentItem && currentItem.items) {
+      if (currentItem instanceof Folder) {
         area = currentItem.items;
       }
     }
@@ -59,7 +59,7 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     return items.filter(item => {
-      if ('items' in item && item.items && !item.name.toLowerCase().includes(term)) {
+      if (item instanceof Folder && !item.name.toLowerCase().includes(term)) {
         item.items = this.filterFiles(term, item.items);
         return item.items.length;
       } else {

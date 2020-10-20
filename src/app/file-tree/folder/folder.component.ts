@@ -1,6 +1,6 @@
 import {Component, Input, OnInit, Output, EventEmitter, OnDestroy} from '@angular/core';
 import {Folder} from '../../../models/folder';
-import {Subscription} from "rxjs";
+import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-folder',
@@ -38,7 +38,7 @@ export class FolderComponent implements OnInit, OnDestroy {
       return;
     }
     const selectedItem = this.node.items[index];
-    if ('items' in selectedItem && selectedItem.items) {
+    if (selectedItem instanceof Folder) {
       const i = this.opened.indexOf(selectedItem.name);
       if (i !== -1) {
         this.opened.splice(i, 1);
@@ -57,7 +57,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     return this.opened.includes(name);
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.openSubscription.unsubscribe();
   }
 
