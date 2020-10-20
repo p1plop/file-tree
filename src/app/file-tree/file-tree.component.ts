@@ -1,7 +1,7 @@
-import {Component, EventEmitter, OnInit, ChangeDetectorRef, AfterViewInit, OnDestroy} from '@angular/core';
+import {Component, EventEmitter, OnInit, AfterViewInit, OnDestroy} from '@angular/core';
 import { Folder } from '../../models/folder';
 import { files } from '../files';
-import {ActivatedRoute, Router} from '@angular/router';
+import {Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {debounceTime} from 'rxjs/operators';
 import {FormControl} from '@angular/forms';
@@ -16,11 +16,11 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
   files: Folder = files;
   filteredFiles: Folder = Object.assign({}, this.files);
   viewedItem: TreeItem;
-  openPath = new EventEmitter<string>();
+  openPath = new EventEmitter<string>(true);
   searchSubscription: Subscription;
   search = new FormControl();
 
-  constructor(private router: Router, private route: ActivatedRoute, private cdRef: ChangeDetectorRef) { }
+  constructor(private router: Router) { }
 
   ngOnInit(): void {
     this.searchSubscription = this.search.valueChanges.pipe(
@@ -35,7 +35,6 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
     const url = this.router.url.substring(1);
     if (url) {
       this.openPath.emit(decodeURI(url));
-      this.cdRef.detectChanges();
     }
   }
 
