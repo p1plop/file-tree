@@ -1,11 +1,11 @@
 import {Component, EventEmitter, OnInit, ChangeDetectorRef, AfterViewInit, OnDestroy} from '@angular/core';
 import { Folder } from '../../models/folder';
-import {File} from '../../models/file';
 import { files } from '../files';
 import {ActivatedRoute, Router} from '@angular/router';
 import {Subscription} from 'rxjs';
 import {debounceTime} from 'rxjs/operators';
 import {FormControl} from '@angular/forms';
+import {TreeItem} from '../../models/tree-item';
 
 @Component({
   selector: 'app-file-tree',
@@ -15,7 +15,7 @@ import {FormControl} from '@angular/forms';
 export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
   files: Folder = files;
   filteredFiles: Folder = Object.assign({}, this.files);
-  viewedItem: Folder | File;
+  viewedItem: TreeItem;
   openPath = new EventEmitter<string>();
   searchSubscription: Subscription;
   search = new FormControl();
@@ -53,7 +53,7 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigateByUrl(path);
   }
 
-  private filterFiles(term: string, items: (File | Folder)[]): (File | Folder)[] {
+  private filterFiles(term: string, items: TreeItem[]): TreeItem[] {
     if (!term) {
       return files.items;
     }
