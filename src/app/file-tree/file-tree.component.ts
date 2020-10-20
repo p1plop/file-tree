@@ -3,8 +3,9 @@ import { Folder } from '../../models/folder';
 import {File} from '../../models/file';
 import { files } from '../files';
 import {ActivatedRoute, Router} from '@angular/router';
-import {Subject, Subscription} from 'rxjs';
+import {Subscription} from 'rxjs';
 import {debounceTime} from 'rxjs/operators';
+import {FormControl} from '@angular/forms';
 
 @Component({
   selector: 'app-file-tree',
@@ -16,13 +17,13 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
   filteredFiles: Folder = Object.assign({}, this.files);
   viewedItem: Folder | File;
   openPath = new EventEmitter<string>();
-  searchInput = new Subject();
-  searchSubscription: Subscription
+  searchSubscription: Subscription;
+  search = new FormControl();
 
   constructor(private router: Router, private route: ActivatedRoute, private cdRef: ChangeDetectorRef) { }
 
   ngOnInit(): void {
-    this.searchSubscription = this.searchInput.pipe(
+    this.searchSubscription = this.search.valueChanges.pipe(
       debounceTime(1000)
     ).subscribe((term: string) => {
       const itemsClone = JSON.parse(JSON.stringify(files.items));
@@ -36,10 +37,6 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
       this.openPath.emit(decodeURI(url));
       this.cdRef.detectChanges();
     }
-  }
-
-  searchChange(value: string): void {
-    this.searchInput.next(value);
   }
 
   viewByPath(path: string): void {
@@ -71,7 +68,7 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.searchSubscription.unsubscribe();
   }
 }

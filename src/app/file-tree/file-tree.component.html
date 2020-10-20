@@ -1,5 +1,7 @@
 <div class="search">
-  <input type="text" placeholder="Поиск" #search (keyup)="searchChange(search.value)">
+  <label>
+    <input type="text" placeholder="Поиск" [formControl]="search">
+  </label>
 </div>
 
 <div class="main">
