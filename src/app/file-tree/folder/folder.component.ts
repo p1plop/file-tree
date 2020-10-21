@@ -21,7 +21,7 @@ export class FolderComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.openSubscription = this.open.subscribe(path => {
       const pathArray = path.split('/');
-      this.select(pathArray[0]);
+      this.select(pathArray[0], true);
 
       pathArray.splice(0, 1);
       if (pathArray.length) {
@@ -32,7 +32,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     });
   }
 
-  select(path: string): void {
+  select(path: string, force = false): void {
     const index = this.node.items.findIndex(item => item.name === path);
     if (index === -1) {
       return;
@@ -40,9 +40,10 @@ export class FolderComponent implements OnInit, OnDestroy {
     const selectedItem = this.node.items[index];
     if (selectedItem instanceof Folder) {
       const i = this.opened.indexOf(selectedItem.name);
-      if (i !== -1) {
+
+      if (i !== -1 && !force) {
         this.opened.splice(i, 1);
-      } else {
+      } else if (i === -1) {
         this.opened.push(selectedItem.name);
       }
     }

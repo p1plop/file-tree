@@ -14,7 +14,7 @@ import {TreeItem} from '../../models/tree-item';
 })
 export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
   files: Folder = files;
-  filteredFiles: Folder = Object.assign({}, this.files);
+  filteredFiles: Folder;
   viewedItem: TreeItem;
   openPath = new EventEmitter<string>(true);
   searchSubscription: Subscription;
@@ -23,11 +23,12 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(private router: Router) { }
 
   ngOnInit(): void {
+    this.filteredFiles = new Folder('root', this.filterFiles('', files.items));
+
     this.searchSubscription = this.search.valueChanges.pipe(
       debounceTime(1000)
     ).subscribe((term: string) => {
-      const itemsClone = JSON.parse(JSON.stringify(files.items));
-      this.filteredFiles.items = this.filterFiles(term.toLowerCase(), itemsClone);
+      this.filteredFiles.items = this.filterFiles(term.toLowerCase(), files.items);
     });
   }
 
@@ -52,19 +53,30 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.navigateByUrl(path);
   }
 
-  private filterFiles(term: string, items: TreeItem[]): TreeItem[] {
-    if (!term) {
-      return files.items;
+  filterFiles(term: string, items: TreeItem[], path= ''): TreeItem[] {
+    const matches = [];
+    if (!items) {
+      return matches;
+    } else if (!term) {
+      return items;
     }
 
-    return items.filter(item => {
-      if (item instanceof Folder && !item.name.toLowerCase().includes(term)) {
-        item.items = this.filterFiles(term, item.items);
-        return item.items.length;
+    for (const item of items) {
+      if (item.name.toLowerCase().includes(term)) {
+        matches.push(item);
+        const url = `${path}/${item.name}`.substring(1);
+        if (url) {
+          this.openPath.emit(decodeURI(url));
+        }
       } else {
-        return item.name.toLowerCase().includes(term);
+        const childResults = this.filterFiles(term, item.items, `${path}/${item.name}`);
+        if (childResults.length) {
+          matches.push(new Folder(item.name, childResults));
+        }
       }
-    });
+    }
+
+    return matches;
   }
 
   ngOnDestroy(): void {
