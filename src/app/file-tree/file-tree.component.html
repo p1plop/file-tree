@@ -7,7 +7,12 @@
 <div class="main">
   <div class="section structure">
     <h2>Фалйовая структура</h2>
-    <app-folder [node]="filteredFiles" (selected)="viewByPath($event)" [open]="openPath"></app-folder>
+    <app-folder [node]="filteredFiles"
+                (selected)="viewByPath($event)"
+                [open]="openPath"
+                [depth]="0">
+
+    </app-folder>
   </div>
 
   <div class="section">

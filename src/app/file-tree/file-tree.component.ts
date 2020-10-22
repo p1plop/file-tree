@@ -1,4 +1,4 @@
-import {Component, EventEmitter, OnInit, AfterViewInit, OnDestroy} from '@angular/core';
+import {Component, OnInit, OnDestroy} from '@angular/core';
 import { Folder } from '../../models/folder';
 import { files } from '../files';
 import {Router} from '@angular/router';
@@ -12,11 +12,11 @@ import {TreeItem} from '../../models/tree-item';
   templateUrl: './file-tree.component.html',
   styleUrls: ['./file-tree.component.scss']
 })
-export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
+export class FileTreeComponent implements OnInit, OnDestroy {
   files: Folder = files;
   filteredFiles: Folder;
   viewedItem: TreeItem;
-  openPath = new EventEmitter<string>(true);
+  openPath: string;
   searchSubscription: Subscription;
   search = new FormControl();
 
@@ -25,18 +25,16 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.filteredFiles = new Folder('root', this.filterFiles('', files.items));
 
+    const url = this.router.url.substring(1);
+    if (url) {
+      this.openPath = decodeURI(url);
+    }
+
     this.searchSubscription = this.search.valueChanges.pipe(
       debounceTime(1000)
     ).subscribe((term: string) => {
       this.filteredFiles.items = this.filterFiles(term.toLowerCase(), files.items);
     });
-  }
-
-  ngAfterViewInit(): void {
-    const url = this.router.url.substring(1);
-    if (url) {
-      this.openPath.emit(decodeURI(url));
-    }
   }
 
   viewByPath(path: string): void {
@@ -49,11 +47,14 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    this.viewedItem = area.find(item => item.name === arr[arr.length - 1]);
+    // От этого хака не придумал как избавиться, без него применение пути из url провоцирует ошибку
+    setTimeout(() => {
+      this.viewedItem = area.find(item => item.name === arr[arr.length - 1]);
+    });
     this.router.navigateByUrl(path);
   }
 
-  filterFiles(term: string, items: TreeItem[], path= ''): TreeItem[] {
+  filterFiles(term: string, items: TreeItem[], path: string = '', opened: string[] = []): TreeItem[] {
     const matches = [];
     if (!items) {
       return matches;
@@ -65,11 +66,12 @@ export class FileTreeComponent implements OnInit, AfterViewInit, OnDestroy {
       if (item.name.toLowerCase().includes(term)) {
         matches.push(item);
         const url = `${path}/${item.name}`.substring(1);
-        if (url) {
-          this.openPath.emit(decodeURI(url));
+        if (url && !opened.length) {
+          this.openPath = decodeURI(url);
+          opened.push(path);
         }
       } else {
-        const childResults = this.filterFiles(term, item.items, `${path}/${item.name}`);
+        const childResults = this.filterFiles(term, item.items, `${path}/${item.name}`, opened);
         if (childResults.length) {
           matches.push(new Folder(item.name, childResults));
         }

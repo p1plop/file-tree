@@ -1,38 +1,40 @@
-import {Component, Input, OnInit, Output, EventEmitter, OnDestroy} from '@angular/core';
+import {Component, Input, OnInit, Output, EventEmitter} from '@angular/core';
 import {Folder} from '../../../models/folder';
-import {Subscription} from 'rxjs';
 
 @Component({
   selector: 'app-folder',
   templateUrl: './folder.component.html',
   styleUrls: ['./folder.component.scss']
 })
-export class FolderComponent implements OnInit, OnDestroy {
+export class FolderComponent implements OnInit {
   opened: string[] = [];
-  openChildPath = new EventEmitter<string>();
-  openSubscription: Subscription;
+  private _open: string;
 
   @Input() node: Folder;
-  @Input() open: EventEmitter<string>;
+  @Input() set open(value: string) {
+    this._open = value;
+
+    if (value && this.depth !== undefined) {
+      const pathArray = value.split('/');
+      this.select(pathArray[this.depth], pathArray.length - 1 === this.depth, true);
+    }
+  }
+  get open(): string {
+    return this._open;
+  }
+  @Input() depth: number;
   @Output() selected = new EventEmitter<string>();
 
   constructor() { }
 
   ngOnInit(): void {
-    this.openSubscription = this.open.subscribe(path => {
-      const pathArray = path.split('/');
-      this.select(pathArray[0], true);
-
-      pathArray.splice(0, 1);
-      if (pathArray.length) {
-        setTimeout(() => {
-          this.openChildPath.emit(pathArray.join('/'));
-        }, 0);
-      }
-    });
+    if (this.open) {
+      const pathArray = this.open.split('/');
+      this.select(pathArray[this.depth], pathArray.length - 1 === this.depth, true);
+    }
   }
 
-  select(path: string, force = false): void {
+  select(path: string, emit: boolean, force = false): void {
     const index = this.node.items.findIndex(item => item.name === path);
     if (index === -1) {
       return;
@@ -47,7 +49,9 @@ export class FolderComponent implements OnInit, OnDestroy {
         this.opened.push(selectedItem.name);
       }
     }
-    this.selected.emit(path);
+    if (emit) {
+      this.selected.emit(path);
+    }
   }
 
   childSelected(path: string, parent: string): void {
@@ -56,10 +60,6 @@ export class FolderComponent implements OnInit, OnDestroy {
 
   isOpened(name: string): boolean {
     return this.opened.includes(name);
-  }
-
-  ngOnDestroy(): void {
-    this.openSubscription.unsubscribe();
   }
 
 }
