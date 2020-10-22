@@ -47,10 +47,7 @@ export class FileTreeComponent implements OnInit, OnDestroy {
       }
     }
 
-    // От этого хака не придумал как избавиться, без него применение пути из url провоцирует ошибку
-    setTimeout(() => {
-      this.viewedItem = area.find(item => item.name === arr[arr.length - 1]);
-    });
+    this.viewedItem = area.find(item => item.name === arr[arr.length - 1]);
     this.router.navigateByUrl(path);
   }
 

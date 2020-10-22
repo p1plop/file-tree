@@ -23,7 +23,7 @@ export class FolderComponent implements OnInit {
     return this._open;
   }
   @Input() depth: number;
-  @Output() selected = new EventEmitter<string>();
+  @Output() selected = new EventEmitter<string>(true);
 
   constructor() { }
 
